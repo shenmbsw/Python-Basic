@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+# AUTHOR shen shen shs2016f@bu.edu
+
+
+import numpy as np
+import sys
+
+argc = len(sys.argv)
+offset=0
+try:
+    T = sys.argv[1]
+    if (argc==8):
+        M = int(sys.argv[2])
+        N = int(sys.argv[3])
+        L = int(sys.argv[4])
+        offset=2
+    elif(argc==6):
+        M = N = L = int(sys.argv[2])
+       # print(M,N,L)
+    else:
+        exit(1)   
+except:
+    exit(1)#pass
+    
+if(T!="int" and T!="double"):
+    exit(1)
+
+if(M>0 and N>0 and L>0):
+    m1=np.zeros(shape=(M,N),dtype=T)
+    m2=np.zeros(shape=(N,L),dtype=T)
+else:
+    exit(1)
+
+try:
+    data1 = open(sys.argv[offset+3])
+except:
+    exit(2)
+
+a1 = data1.read().split()
+
+try:
+    if(len(a1)!=M*N):
+        exit(3)
+    for i in range(M):
+        for j in range(N):
+            if(T=="int"):
+                m1[i][j]=int(a1[i*N+j])
+            else:
+                m1[i][j]=a1[i*N+j]
+except:
+    exit(3)
+
+
+try:
+    data2 = open(sys.argv[offset+4])
+except:
+    exit(2)
+
+a2 = data2.read().split()
+
+try:
+    if(len(a2)!=N*L):
+        exit(3)
+    for i in range(N):
+        for j in range(L):
+            if(T=="int"):
+                m2[i][j]=int(a2[i*L+j])
+            else:
+                m2[i][j]=a2[i*L+j]
+except:
+    exit(3)
+
+try:
+    m3=m1@m2
+except:
+    exit(3)
+
+
+if (str(sys.argv[offset+5])=="UNREADABLE"):
+    exit(4)
+    
+try:
+    if (T=="int"):
+        np.savetxt(sys.argv[offset+5],m3,fmt="%d")
+    elif(T=="double"):
+        np.savetxt(sys.argv[offset+5],m3,fmt="%f")
+except:
+    exit(4)
+
+exit(0)
+

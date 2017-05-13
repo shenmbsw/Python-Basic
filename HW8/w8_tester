@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+# AUTHOR shen shen shs2016f@bu.edu
+
+
+import numpy as np
+import subprocess
+import sys
+import time
+uniform=np.random.uniform
+randint=np.random.randint
+
+
+
+    #dtype is int or double
+    #Nlist is a list of matrix sizes to test the programs on. We will test square matrices for now.
+    #Ntrials is the number of different files to average the results over.
+
+#set up file waiting to be tested
+dtype=sys.argv[1]
+Nlist=eval(sys.argv[2])
+Ntrials=int(sys.argv[3])
+
+if (dtype=="int"):
+    for i in Nlist:
+        for j in range(0,Ntrials):
+             with open('test1_'+str(i)+'_'+str(j)+'.txt', 'w') as w:
+                 w.write(str(randint(-10,10,(i,i))))
+             with open('test2_'+str(i)+'_'+str(j)+'.txt', 'w') as w:
+                 w.write(str(randint(-10,10,(i,i))))
+
+elif (dtype=="double"):
+    for i in Nlist:
+        for j in range(0,Ntrials):
+             with open('test1_'+str(i)+'_'+str(j)+'.txt', 'w') as w:
+                 w.write(str(uniform(-10,10,(i,i))))
+             with open('test2_'+str(i)+'_'+str(j)+'.txt', 'w') as w:
+                 w.write(str(uniform(-10,10,(i,i))))
+
+#creat exefile form c++             
+subprocess.call(["g++","-std=c++14","-O1","w8c_multiply.cpp","-o","w8c_multiply_1"])
+subprocess.call(["g++","-std=c++14","-O2","w8c_multiply.cpp","-o","w8c_multiply_2"])
+subprocess.call(["g++","-std=c++14","-O3","w8c_multiply.cpp","-o","w8c_multiply_3"])
+
+#testing
+t = {}
+for i in Nlist:
+    start = time.time()
+    for j in range(0,Ntrials):
+        subprocess.call(["./w8p_multiply",dtype,str(i),'test1_'+str(i)+'_'+str(j)+'.txt','test1_'+str(i)+'_'+str(j)+'.txt',"testout.txt"])
+    t['py ' + str(i)] = (time.time() - start)/Ntrials
+    
+    start = time.time()
+    for j in range(0,Ntrials):
+        subprocess.call(["./w8c_multiply_1",dtype,str(i),'test1_'+str(i)+'_'+str(j)+'.txt','test1_'+str(i)+'_'+str(j)+'.txt',"testout.txt"])
+    t['O1 ' + str(i)] = (time.time() - start)/Ntrials
+    
+    start = time.time()
+    for j in range(0,Ntrials):
+        subprocess.call(["./w8c_multiply_2",dtype,str(i),'test1_'+str(i)+'_'+str(j)+'.txt','test1_'+str(i)+'_'+str(j)+'.txt',"testout.txt"])
+    t['O2 ' + str(i)] = (time.time() - start)/Ntrials
+
+    start = time.time()
+    for j in range(0,Ntrials):
+        subprocess.call(["./w8c_multiply_3",dtype,str(i),'test1_'+str(i)+'_'+str(j)+'.txt','test1_'+str(i)+'_'+str(j)+'.txt',"testout.txt"])
+    t['O3 ' + str(i)] = (time.time() - start)/Ntrials
+
+output = sorted(t, key=t.get, reverse = True)
+for i in output:
+    print(i,t[i])
